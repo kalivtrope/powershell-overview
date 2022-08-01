@@ -1,0 +1,205 @@
+\documentclass[main.tex]{subfiles}
+
+\begin{document}
+\section{Úvod}
+
+\subsection{Obecné informace}
+\begin{frame}[fragile]{Obecné informace}
+  \begin{itemize}
+    \item Textové prostředí (\textit{shell}) se skriptovacím jazykem
+    \item Vyvíjené společností Microsoft od roku 2006
+      \begin{itemize}
+        \item Podrobná oficiální dokumentace
+      \end{itemize}
+    \item Založeno na platformě .NET (předtím Framework, nyní Core)
+    \item V posledních letech se rozšiřuje na ostatní systémy
+      \begin{itemize}
+        \item Linux, Mac OS, ARM (Raspberry Pi)
+      \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\subsection{Desktop vs. Core}
+\begin{frame}{Windows Powershell}
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+      \begin{itemize}
+        \item Poslední verze 5.1
+        \item Založený na .NET Framework
+        \item Dostupný pouze na Windows
+        \item Na systému již předinstalovaný
+        \item Vývoj byl ukončen - nyní se pouze udržuje
+          \begin{itemize}
+            \item Stále se vydávají opravy chyb a bezpečnostní záplaty
+          \end{itemize}
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \begin{center}
+      \includegraphics[width=0.8\textwidth]{img/logo2.png}
+      \end{center}
+    \end{column}
+  \end{columns}
+    \end{frame}
+    \begin{frame}[allowframebreaks]{Powershell Core}
+     \begin{columns}
+       \begin{column}{0.5\textwidth}
+      \begin{itemize}
+     \item Uveden v srpnu 2016 s verzí 6.0
+     \item Založený na .NET Core Runtime
+     \item Poslední verze 7.0.0 (experimentální)
+       \item Open-source
+         \begin{itemize}
+           \item Instalace z balíčku na \href{https://github.com/PowerShell/PowerShell}{Githubu} (zde je popsán podrobný návod pro~všechny systémy)
+         \end{itemize}
+     \end{itemize}
+       \end{column}
+       \begin{column}{0.5\textwidth}
+         \begin{center}
+          \includegraphics[width=0.8\textwidth]{img/logo.png}
+         \end{center}
+       \end{column}
+     \end{columns}
+         \begin{center}
+\includegraphics[width=1\textwidth]{img/install_distros.png}
+         \end{center}
+         \begin{itemize}
+       \item Multiplatformní
+       \item Velká část příkazů z verze 5.1 kvůli kompatibilitě zatím chybí
+     \end{itemize}
+\end{frame}
+
+\subsection{Instalace}
+\begin{frame}[allowframebreaks]{Instalace na Windows}
+  Z \href{https://github.com/PowerShell/PowerShell/releases}{Githubového repozitáře} Powershellu (sekce Assets v Releases nebo Get Powershell v README) stáhneme instalační program pro náš systém.\\
+
+  \includegraphics[width=1\textwidth,frame]{img/assetLink.png}\\
+
+  Při instalaci klikáme na tlačítko Next, dokud se neobjeví tlačítko Install, na které také klikneme.
+
+
+  \begin{center}
+  \includegraphics[width=0.85\textwidth,frame]{img/wizard.png}
+  \end{center}
+\end{frame}
+\begin{frame}{Instalace na Windows}
+  \begin{center}
+  \includegraphics[width=0.80\textwidth,frame]{img/wizard2.png}
+  \end{center}
+\end{frame}
+
+\begin{frame}{Instalace na Windows}
+  \begin{center}
+  \includegraphics[width=0.80\textwidth,frame]{img/wizard3.png}
+  \end{center}
+\end{frame}
+
+\begin{frame}{Instalace na Windows}
+  \begin{center}
+  Klikneme na tlačítko Finish.\\
+  \end{center}
+  \begin{center}
+
+  \includegraphics[width=0.70\textwidth,frame]{img/wizard4.png}
+  \end{center}
+\end{frame}
+\begin{frame}{Instalace na Windows}
+  \begin{center}
+    \includegraphics[width=1\textwidth,frame]{img/wizard5.png}
+  \end{center}
+\end{frame}
+
+
+\begin{frame}[fragile,allowframebreaks]{Instalace na Arch Linux}
+\begin{itemize}
+  \item Neoficiální podpora ze strany uživatelské komunity
+  \item Dostupné jako balíček \texttt{powershell-bin} v Arch User Repository
+  \item Instaluje se pomocí správce balíčků, který podporuje AUR
+\end{itemize}
+        \begin{minted}[bgcolor=bg1]{shell-session}
+[blanche@arch ~]$ yay -Sy powershell-bin
+[sudo] password for blanche:
+
+(1/4) installing liburcu
+(2/4) installing numactl
+(3/4) installing lttng-ust
+(4/4) installing openssl-1.0
+
+Total Installed Size:  151.00 MiB
+
+:: Proceed with installation? [Y/n]
+(1/1) Arming ConditionNeedsUpdate...
+\end{minted}
+\framebreak
+\begin{minted}[bgcolor=bg1]{shell-session}
+[blanche@arch ~]$ pwsh
+PowerShell 7.0.0
+Copyright (c) Microsoft Corporation. All rights reserved.
+
+https://aka.ms/powershell
+Type 'help' to get help.\end{minted}
+\vspace{-13mm}
+\begin{minted}[bgcolor=bg1]{ps1con}
+PS /home/blanche> Write-Output "Hello, PowerShell!"
+Hello, PowerShell!
+\end{minted}
+\end{frame}
+
+\begin{frame}{Windows Terminal}
+  \begin{columns}
+    \begin{column}{0.45\textwidth}
+ \begin{itemize}
+  \item Představen v květnu 2019
+  \item Dostupný ve Windows Store
+  \item Open-source
+  \item Moderní design konzole pro Windows 10
+  \item Umožňuje používat více panelů
+    \begin{itemize}
+      \item V každém z nich lze spustit klasický CMD, PowerShell, nebo třeba linuxový terminál (možnost rozšíření)
+    \end{itemize}
+  \item Podpora ligatury (slitek) kódu
+\end{itemize}
+    \end{column}
+    \begin{column}{0.55\textwidth}
+      \includegraphics[width=\textwidth]{img/term.png}
+    \end{column}
+  \end{columns}
+\end{frame}
+\subsection{Vlastnosti jazyka}
+\begin{frame}[allowframebreaks]{Popis jazyka}
+  \begin{itemize}
+    \item Přípona \texttt{.ps1}
+    \item Objektově orientovaný se vším všudy
+      \begin{itemize}
+        \item Výstupy příkazů jsou (ve většině případů) také objekty
+        \item Tím se liší například od klasického unixového shellu, kde jsou příkazy schopny vracet pouze text
+      \end{itemize}
+    \item Příkazy mohou, ale nemusí být zakončeny středníky (v případě, že chceme dostat více příkazů na jeden řádek)
+      \begin{itemize}
+        \item Stačí je oddělovat koncem řádku (\textit{newline})
+      \end{itemize}
+    \item Možnost spouštět skripty samostatně nebo psát příkazy do interaktivní konzole
+    \item Načítání modulů (externí balíčky příkazů) - soubory \texttt{.psm1} nebo \texttt{.dll}
+  \end{itemize}
+      \framebreak
+      \begin{itemize}
+    \item \textbf{Pipeline} (roury) - přesměrování vstupu mezi příkazy
+    \item \textbf{Cmdlet} - příkaz ve formátu \texttt{Sloveso-Podstatné jméno}
+      \begin{itemize}
+        \item např. \texttt{Get-Command}, \texttt{Write-Output}, \texttt{Add-Content}
+      \end{itemize}
+    \item Case-insensitive (nezáleží na velikosti písmen)
+      \begin{itemize}
+        \item \texttt{Get-Help} znamená to samé jako \texttt{get-help}
+      \end{itemize}
+    \item Podpora \textbf{aliasů}
+    \item Možnost kombinace s unixovými příkazy (na které buď existuje alias pro cmdlet - \texttt{cat, pwd, echo}, nebo jsou přímou součástí systému - \texttt{lolcat, cmatrix, cowsay})
+      \begin{itemize}
+        \item Nedoporučuje se, skript pak nemusí být spustitelný na jiných systémech
+      \end{itemize}
+
+  \end{itemize} 
+\end{frame}
+
+
+\end{document}

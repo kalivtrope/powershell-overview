@@ -1,0 +1,318 @@
+\documentclass[main.tex]{subfiles}
+
+\begin{document}
+\section{Pokročilé}
+
+\subsection{Formuláře}
+\begin{frame}[fragile,allowframebreaks]{Formuláře}
+\begin{itemize}
+  \item Tvorba grafických prostředí možná pouze pro Windows
+  \item Založeno na platformě .NET Framework a její knihovně tříd Forms
+  \item Nelze s ním pracovat v Powershell Core
+  \item Ovládací prvky:
+    \begin{itemize}
+      \item Tlačítka: \texttt{Button, CheckBox, RadioButton}
+      \item Textový vstup: \texttt{TextBox}
+      \item Popis: \texttt{Label}
+      \item Obrázek: \texttt{PictureBox}
+      \item Ukazatel průběhu: \texttt{ProgressBar}
+      \item Rozevírací nabídka: \texttt{ComboBox}
+      \item Seskupení několika prvků: \texttt{GroupBox}
+    \end{itemize}
+\end{itemize}
+\begin{center}
+  \textbf{Ukázka použití ovládacích prvků.}
+
+  Zdrojový kód dostupný \href{https://gist.github.com/kalivtrope/1c8edaace6c65225010a6791fcef3fa6}{zde}.\\[2mm]
+
+  \includegraphics[width=0.65\textwidth]{img/sample.png}
+\end{center}
+\framebreak
+\textbf{Atributy ovládacích prvků}
+\begin{itemize}
+  \item K textovému obsahu komponent se přistupuje v atributu \textbf{Text}
+    \begin{itemize}
+      \item U samotného formuláře tato vlastnost určuje název okna
+      \item Mimojiné jde měnit i \textbf{Font} textu, například
+        \mintinline{powershell}|$label.Font = 'Segoe UI font,12'|
+    \end{itemize}
+  \item Velikost prvku je uložena v atributu \textbf{Size} (a také \textbf{Width,Height})
+    \begin{itemize}
+      \item Dá se nastavit dvěma způsoby:
+        \begin{enumerate}
+          \item Pomocí objektů v \texttt{System.Drawing} (třeba přidat přes \texttt{Add-Type}) \mintinline{powershell}|$form.Size = New-Object System.Drawing.Size($width,$height)|
+          \item Deklarací v řetězci\\ \mintinline{powershell}|$form.Size = '{0},{1}' -f $width,$height|
+        \end{enumerate}
+      \item Také se může dopočítat automaticky (v závislosti na rozměru obsahu) nastavením booleovské vlastnosti \textbf{AutoSize}
+    \end{itemize}
+  \item Pozice komponenty se definuje v členu \textbf{Location}
+    \begin{itemize}
+      \item Udává se v pixelech
+      \item Vzdálenost se měří od levého horního rohu okna
+      \item K přiřazení se může využít \texttt{System.Drawing.Point} nebo opět řetězec
+    \end{itemize}
+\end{itemize}
+  \framebreak
+    \begin{itemize}
+  \item \textit{Atributy specifické pro formulář}
+      \begin{itemize}
+        \item Vlastnost \textbf{StartPosition} umožňuje zarovnání formuláře na obrazovce, nejčastěji na střed:\\
+          \mintinline{powershell}|$form.StartPosition = 'CenterScreen'|
+        \item Boolean \textbf{TopMost} udává, zda se formulář bude zobrazovat nad všemi ostatními (i při přepnutí na jiné okno)
+        \item Do kolekce \textbf{Controls} je třeba přidat veškeré ovládací prvky, které chceme ve formuláři zobrazit
+          \begin{enumerate}
+            \item \mintinline{powershell}|$form.Controls.AddRange(@($label, $userInput, $genButton))|
+            \item \begin{minted}{powershell}
+$form.controls.Add($label)
+$form.Controls.Add($userInput)
+$form.Controls.Add($genButton)
+              \end{minted}
+          \end{enumerate}
+        \item Ohraničení okna se nastaví v atributu \textbf{FormBorderStyle}
+          \begin{itemize}
+            \item Hodnota \mintinline{powershell}|'FixedDialog'| zabrání změně velikosti okna
+          \end{itemize}
+  \item Po veškeré konfiguraci a přidání do formuláře dojde k jeho zobrazení metodou \textbf{ShowDialog}
+    \end{itemize}
+\end{itemize}
+\framebreak
+\textbf{Zachytávání událostí}
+\begin{itemize}
+      \item K informacím o události lze v kontrolních funkcích opět přistoupit v automatické proměnné \texttt{\$\_}
+      \item Ovládací funkce musí být typu \texttt{ScriptBlock}, proto pokud jsme původně deklarovali samostatnou funkci, je třeba ji při přidání obalit do \texttt{\{ \}}
+  \item \textit{Kliknutí myši}
+    \begin{itemize}
+      \item Ovládací funkce se přidává pomocí metody \textbf{Add\_Click}
+        \mintinline{powershell}|$genButton.Add_Click({Shuffle})|
+    \end{itemize}
+  \item \textit{Stisknutí klávesy}
+    \begin{itemize}
+      \item Je třeba zapnout booleovský atribut formuláře \textbf{KeyPreview}
+        \begin{itemize}
+          \item Ten umožní formuláři obdržet jednotlivé klávesy
+          \item Jinak je dostává pouze aktivní komponent (např. textové pole, do kterého se píše)
+        \end{itemize}
+        \framebreak
+      \item Přidává se metodou \textbf{Add\_KeyDown}:
+\begin{minted}{powershell}
+$form.Add_KeyDown({
+  if($_.KeyCode -eq 'Enter'){
+  Shuffle
+  }
+})
+\end{minted}
+\end{itemize}
+\end{itemize}
+\vspace{3mm}
+\begin{itemize}
+  \item Pro přístup k funkcím Forms je třeba načtení pomocí \texttt{Add-Type}
+\begin{minted}{powershell}
+Add-Type -AssemblyName System.Windows.Forms
+\end{minted}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile,allowframebreaks]{Ukázka formulářů}
+  \begin{center}
+    \textbf{Aplikace, která náhodně zpřehází písmenka ve vstupním řetězci.}\\
+  \vspace{3mm}
+  \includegraphics[width=\textwidth,frame]{img/form.png}
+  \end{center}
+\begin{minted}[linenos,fontsize=\footnotesize]{powershell}
+Add-Type -AssemblyName System.Windows.Forms
+Add-Type -AssemblyName System.Drawing
+
+$fontFam = 'Segoe UI font'
+$fontSize = 12
+
+# Vlastnosti formuláře
+$form = New-Object System.Windows.Forms.Form
+$form.Text = 'WordMixer'
+$form.Size = New-Object System.Drawing.Size(600,200)
+$form.StartPosition = 'CenterScreen'
+$form.TopMost = $true
+
+# Popisek textového pole
+$label = New-Object System.Windows.Forms.Label
+$label.Font = $fontFam + ',' + $fontSize
+$label.Location = New-Object System.Drawing.Point(10,
+                    ($form.Size.Height / 4))
+$label.Width = 150
+$label.Height = $fontSize * 3
+$label.Text = 'Zadejte text: '
+
+# Textové pole pro uživatelský vstup
+$userInput = New-Object System.Windows.Forms.TextBox
+$userLocX = $label.Location.X + $label.Width
+$userInput.Location = New-Object System.Drawing.Point($userLocX,
+                        $label.Location.Y)
+$userInput.Font = $fontFam + ',' + $fontSize
+$userInput.Width = 200
+
+function Shuffle {
+  $userInput.Text = ($userInput.Text -split '' |
+                       Sort-Object {Get-Random}) -join ''
+}
+
+# Tlačítko pro generování
+$genButton = New-Object System.Windows.Forms.Button
+$genButton.Text = "Protřepat, nemíchat!"
+$genButton.AutoSize = $true
+$buttonLocX = $userInput.Location.X + $userInput.Width + 5
+$genButton.Location = New-Object System.Drawing.Point($buttonLocX,
+                        $label.Location.Y)
+$genButton.Add_Click({Shuffle})
+
+$form.KeyPreview = $true
+# Možnost stisknout také Enter pro novou generaci
+$form.Add_KeyDown({
+  if($_.KeyCode -eq 'Enter'){
+    Shuffle
+  }
+})
+
+$form.controls.Add($label)
+$form.Controls.Add($userInput)
+$form.Controls.Add($genButton)
+$form.ShowDialog()
+\end{minted}
+\end{frame}
+
+\subsection{Nástroje}
+\begin{frame}[allowframebreaks]{Nástroje pro tvorbu GUI}
+  \textbf{Powershell Studio}
+\begin{itemize}
+  \item Vzhledově podobné Visual Studiu
+  \item Obsahuje grafický návrhář a debugger
+  \item Převod skriptů na spustitelné (\texttt{.exe}) soubory
+  \item Vytváření instalačních (\texttt{.msi}) skriptů
+  \item Tvorba modulů
+  \item Integrovaná konzole
+  \item Monitorování výkonu a využití paměti
+  \item Podpora klasického Powershellu a Powershell Core
+  \item Placené (\textbf{\$399})
+\end{itemize}
+\begin{center}
+\textbf{Powershell Studio}\\
+\vspace{3mm}
+\includegraphics[height=0.72\textheight,frame]{img/pstudio-main.png}
+\end{center}
+\framebreak
+\textbf{POSHGUI}
+\begin{itemize}
+  \item Online nástroj pro výrobu grafických prostředí v Powershellu
+  \item Obsahuje repozitář uživatelských projektů
+  \item Možnost grafické tvorby Cmdletů
+  \item Zdarma
+\end{itemize}
+\framebreak
+\begin{center}
+\textbf{POSHGUI}\\
+\vspace{3mm}
+\includegraphics[width=1.2\textheight,frame]{img/posh.png}
+\end{center}
+\end{frame}
+
+
+\subsection{Remoting}
+\begin{frame}{Remoting}
+  Spouštění kódu na vzdálených zařízeních (dostupných po síti).\\
+
+  \textbf{Windows Powershell}
+  \begin{itemize}
+    \item Pouze pro Windows
+    \item Spojení přes WinRM (Windows Remote Management)
+  \end{itemize}
+  \textbf{Powershell Core}
+  \begin{itemize}
+    \item Multiplatformní
+    \item Komunikace pomocí SSH (Secure Shell)
+    \item Snazší konfigurace zabezpečení (netřeba nastavovat SSL/TLS certifikáty kvůli HTTPS)
+  \end{itemize}
+\end{frame}
+\begin{frame}[fragile,allowframebreaks]{Konfigurace SSH na Windows}
+  OpenSSH - Open-source implementace SSH\\
+
+  \textbf{Instalace OpenSSH z Powershellu (jako Administrátor)}
+\begin{enumerate}
+  \item Zjištění dostupnosti balíčků
+\begin{minted}{powershell}
+Get-WindowsCapability -Online | ? Name -like 'OpenSSH*'
+\end{minted}
+Mělo by vypsat (pokud již není nainstalované):
+\begin{verbatim}
+Name  : OpenSSH.Client~~~~0.0.1.0
+State : NotPresent
+Name  : OpenSSH.Server~~~~0.0.1.0
+State : NotPresent
+\end{verbatim}
+\framebreak
+\item Instalace klienta a serveru
+\begin{minted}[fontsize=\small]{powershell}
+Add-WindowsCapability -Online -Name OpenSSH.Client~~~~0.0.1.0
+Add-WindowsCapability -Online -Name OpenSSH.Server~~~~0.0.1.0
+\end{minted}
+Oba příkazy by měly vrátit:
+\begin{verbatim}
+Path          :
+Online        : True
+RestartNeeded : False
+\end{verbatim}
+\framebreak
+\item Automatické spouštění ssh
+\begin{minted}{powershell}
+Start-Service sshd
+Set-Service -Name sshd -StartupType 'Automatic'
+\end{minted}
+\item Konfigurace firewallu pro server
+\begin{minted}[breaklines]{powershell}
+New-NetFirewallRule -Name sshd -DisplayName 'OpenSSH Server (sshd)' -Enabled True -Direction Inbound -Protocol TCP -Action Allow -LocalPort 22
+  \end{minted}
+\item Úprava konfiguračního souboru \texttt{\$env:ProgramData\textbackslash ssh\textbackslash \textbf{sshd\_config}} (např. přes \texttt{notepad.exe} pořád v Powershellu) - přidání dvou řádků
+  \suspend{enumerate}
+      \scriptsize\begin{verbatim}
+# 1) Povolí ověřování heslem
+PasswordAuthentication Yes
+
+# 2) Vytvoří subsystém (sadu příkazů, přes kterou se klient bude
+# pohodlně připojovat na server) pro Powershell.
+# Počítá se s výchozí cestou instalace pwsh
+# (jinak je třeba dosadit vlastní)
+Subsystem powershell c:/progra~1/powershell/7/pwsh.exe -sshs -NoLogo -NoProfile\end{verbatim}
+\normalsize
+\resume{enumerate}
+\item Restartování služby \texttt{sshd}
+\begin{minted}{powershell}
+Restart-Service sshd
+\end{minted}
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}[fragile,allowframebreaks]{Konfigurace SSH na Linuxu}
+\begin{enumerate}
+  \item OpenSSH je dostupné ve správci balíčků jako \texttt{openssh} nebo \texttt{openssh-server + openssh-client} (liší se u různých distribucí)
+    \begin{itemize}
+      \item Příklad pro Ubuntu:
+    \begin{verbatim}
+sudo apt install openssh-client
+sudo apt install openssh-server
+    \end{verbatim}
+\end{itemize}
+\item Úprava konfiguračního souboru \texttt{/etc/ssh/sshd\_config} - přidání dvou řádků
+  \suspend{enumerate}
+  \begin{verbatim}
+PasswordAuthentication Yes
+# Umístění powershellu lze zjistit příkazem "whereis pwsh"
+Subsystem powershell /usr/bin/pwsh -sshs -NoLogo -NoProfile\end{verbatim}
+
+\resume{enumerate}
+
+\item Restartování služby \texttt{sshd}
+  \begin{itemize}
+    \item Např. přes \texttt{sudo systemctl restart sshd}
+    \item Permanentní zapnutí přes: \texttt{sudo systemctl enable sshd}
+  \end{itemize}
+\end{enumerate}
+\end{frame}
+
+\end{document}

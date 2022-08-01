@@ -1,0 +1,85 @@
+\documentclass[table]{beamer}
+\usepackage[utf8]{inputenc}
+\usepackage[czech]{babel}
+\usepackage[backend=biber]{biblatex}
+\usepackage{xcolor}
+\usepackage[export]{adjustbox}
+\usepackage{fontspec}
+\usepackage{mdwlist}
+\usepackage{csquotes}
+\usepackage{hyperref}
+\usepackage{textpos}
+\usepackage{minted}
+\usepackage{calc}
+\usepackage{multirow}
+\usepackage{environ}
+\usepackage{graphicx}
+\usetheme{Madrid}
+\usecolortheme{beaver}
+\usepackage{subfiles}
+\title{Powershell}
+\author{Kristýna Petrlíková}
+\date{Školní rok 2019/2020}
+\definecolor{links}{HTML}{EC008B}
+\definecolor{urls}{HTML}{3010D0}
+\definecolor{carnationpink}{rgb}{1.0, 0.65, 0.79}
+\definecolor{codered}{HTML}{BA2121}
+\definecolor{bg1}{HTML}{F0F0E0}
+\definecolor{paramcolor}{HTML}{666666}
+\definecolor{cmdletcolor}{HTML}{008000}
+\definecolor{typecolor}{HTML}{870000}
+\definecolor{varcolor}{HTML}{19177D}
+\hypersetup{colorlinks,citecolor=green,linkcolor=,urlcolor=links}
+\definecolor{antiquewhite}{rgb}{0.98, 0.92, 0.84}
+\newfontfamily\DejaSans{DejaVu Sans}
+\setbeamertemplate{frametitle continuation}{}
+\setbeamercolor*{bibliography entry author}{fg=urls}
+\setbeamercolor*{bibliography entry note}{fg=urls}
+%\usemintedstyle{default}
+
+ \definecolor{carminered}{rgb}{1.0, 0.0, 0.22}
+
+\addbibresource{main.bib}
+
+\beamertemplatenavigationsymbolsempty
+
+\AtBeginSection[]%
+{\begin{frame}{Obsah}
+    \tableofcontents[currentsection,hideothersubsections]
+\end{frame}
+\addtocounter{framenumber}{-1}
+}
+\renewcommand*{\bibfont}{\footnotesize}
+
+\begin{document}
+\begin{frame}
+	\titlepage
+\end{frame}
+
+\begin{frame}
+\frametitle{Obsah}
+\hfill
+\tableofcontents[hideallsubsections]
+\end{frame}
+
+\subfile{intro}
+\subfile{syntax}
+\subfile{syntax2}
+\subfile{syntax3}
+\subfile{syntax4}
+\subfile{advanced}
+\subfile{advanced2}
+
+\begin{frame}{Fin.}
+  \begin{center}
+    \Huge Děkuji za pozornost!
+  \end{center}
+\end{frame}
+
+\begin{frame}[t,allowframebreaks]
+\nocite{*}
+\frametitle{Odkazy}
+\printbibliography
+\end{frame}
+
+\end{document}

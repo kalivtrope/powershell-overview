@@ -1,0 +1,364 @@
+\documentclass[main.tex]{subfiles}
+
+\begin{document}
+
+\begin{frame}[fragile]{Porovnávání}
+  \begin{center}
+  \resizebox{\textwidth}{!}{%
+  \begin{tabular}{|c m{1.7cm} m{4.3cm} m{4.2cm}|}
+    \hline
+    \textbf{Název operace} & \textbf{Operátor} & \textbf{Pravdivý výraz} & \textbf{Nepravdivý výraz} \\
+    \hline
+  Rovná se & \mintinline{powershell}|-eq| & \mintinline{powershell}|"abc" -eq "ABC"| & \mintinline{powershell}|5 -eq 8| \\
+  Nerovná se & \mintinline{powershell}|-ne| & \mintinline{powershell}|"abc" -ne "def"| & \mintinline{powershell}|42 -ne 42| \\
+  Větší než & \mintinline{powershell}|-gt| & \mintinline{powershell}|9 -gt 5| & \mintinline{powershell}|5 -gt 5| \\
+  Větší nebo rovno & \mintinline{powershell}|-ge| & \mintinline{powershell}|8 -ge 8| & \mintinline{powershell}|7 -ge 12| \\
+  Menší než & \mintinline{powershell}|-lt| & \mintinline{powershell}|12 -lt 24| & \mintinline{powershell}|24 -lt 12| \\
+  Menší nebo rovno & \mintinline{powershell}|-le| & \mintinline{powershell}|'a' -le "z"| & \mintinline{powershell}|'f' -le 'd'| \\
+  Wildcard match & \mintinline{powershell}|-like| & \mintinline{powershell}|"ABCDEF" -like "a*"| & \mintinline{powershell}|"ABCDEF" -like "b*"| \\
+  Regex match & \mintinline{powershell}|-match| & \mintinline{powershell}|"ABCDEF" -match "BC"| & \mintinline{powershell}|"ABCDEF" -match "^B*"| \\
+  Přítomnost &  \mintinline{powershell}|-in| & \mintinline{powershell}|"a" -in @('a',"b","c")| & \mintinline{powershell}|"a" -in @("b","c")| \\
+  Typová rovnost & \mintinline{powershell}|-is| & \mintinline{powershell}|'a' -is [string]| & \mintinline{powershell}|5 -is [char]| \\
+  \hline
+  \end{tabular}}
+  \end{center}
+\end{frame}
+
+\subsection{Větvení}%
+\begin{frame}[fragile,allowframebreaks]{Podmínky}
+  Větvení programu na základě pravdivosti logických výrazů.\\
+
+  \textbf{Příkaz If/Else}
+    \begin{itemize}
+      \item Skládá se z částí \textit{If, ElseIf} a \textit{Else}
+      \item \textit{ElseIf} a \textit{Else} jsou nepovinné (ale jejich pořadí se musí dodržovat)
+      \item \textit{ElseIf} může být zopakováno neomezeně
+      \item Jakmile se program do jedné z větví zanoří, po vykonání příkazů skočí za konec \textit{Else} (nebo za poslední část v sérii)
+    \end{itemize}
+    \framebreak
+        \textbf{Obecný zápis}
+\begin{center}
+  
+\begin{minted}[mathescape,fontsize=\small]{powershell}
+if( <podmínka1> ) {
+  <příkazy>
+}
+elseif( <podmínka2> ) {
+  <příkazy>
+}
+# $\ldots$
+elseif( <podmínkaN> ) {
+  <příkazy>
+}
+else {
+  <příkazy>
+}
+    \end{minted}
+\end{center}
+ \framebreak
+     \textbf{Příklad: BMI kalkulačka}
+     \begin{center}
+    \begin{minted}[fontsize=\small]{powershell}
+$weight = Read-Host "Zadejte hmotnost (v kg)"
+$height = (Read-Host "Zadejte výšku (v cm)") / 100
+
+$bmi = $weight / ($height * $height)
+
+Write-Host "BMI:" $bmi
+
+if ($bmi -le 16.5) {
+  Write-Host -ForegroundColor Blue "Těžká podvýživa." 
+}
+elseif ($bmi -le 18.5) {
+  Write-Host -ForegroundColor Cyan "Podváha."
+}
+elseif ($bmi -le 25) {
+  Write-Host -ForegroundColor Green "Ideální (zdravá) váha."
+}
+elseif ($bmi -le 30) {
+  Write-Host -ForegroundColor Yellow "Nadváha."
+}
+elseif ($bmi -le 35) {
+  Write-Host -ForegroundColor Orange "Obezita prvního stupně."
+}
+elseif ($bmi -le 40) {
+  Write-Host -ForegroundColor Red "Obezita druhého stupně."
+}
+else {
+  Write-Host -ForegroundColor Magenta "Morbidní obezita."
+}
+
+\end{minted}
+\end{center}
+
+\framebreak
+\textbf{Ternární operátor}
+\begin{itemize}
+  \item Nově s verzí 7.0
+  \item Zápis \textit{If, Else} v jednom příkaze
+  \item \texttt{<podmínka> ? <if-true> : <if-false>}
+\end{itemize}
+\vspace{5mm}
+    \begin{center}
+    \begin{minted}[escapeinside=||]{powershell}
+$path = "/proc/self"
+# Příkaz Test-Path zjišťuje,
+# zda v systému existuje daná cesta.
+$system = (Test-Path $path) ? "Unix" |:| "Windows"  # Unix
+    \end{minted}
+    \end{center}
+ \framebreak
+\textbf{Switch}
+\begin{itemize}
+  \item Větvení programu na základě hodnoty jedné proměnné
+  \item Lze testovat přesné hodnoty, porovnávat pomocí operátorů nebo ověřovat vůči regulárnímu výrazu
+  \item Dá se použít i na kolekce
+  \item Možnost Default slouží jako výchozí, když porovnání se všemi ostatními větvemi neuspělo
+\end{itemize}
+\textbf{Syntax}
+    \begin{minted}[mathescape]{powershell} 
+Switch(<proměnná>) {
+  <možnost1> {<příkazy>}
+  <možnost2> {<příkazy>}
+  # $\ldots$
+  <možnostN> {<příkazy>}
+  Default    {<příkazy>}
+}
+  \end{minted}
+  \begin{itemize}
+    \item Klíčová slova \textit{Break} a \textit{Continue} se hodí při testování hodnot pole nebo pokud Switch obsahuje více možností odpovídajících pro danou hodnotu
+      \begin{itemize}
+        \item Příkaz \textit{Break} ukončí testování aktuální i všech následujících hodnot kolekce.
+        \item Příkaz \textit{Continue} ukončí testování pouze aktuální hodnoty.
+      \end{itemize}
+   \item Aktuální testovaná hodnota je uložená v proměnné \mintinline{powershell}|$_|
+  \end{itemize}
+\framebreak
+\noindent \textbf{Příklad: Switch v poli}
+\vspace{3mm}
+  \begin{columns}
+    \begin{column}{0.6\textwidth}
+ \begin{minted}{powershell}
+Switch (1,4,-1,3,"Číslo",2,1)
+{
+  1 { "Lednička" }
+  {$_ -lt 0} { Continue }
+  {$_ -isnot [Int32]} { Break }
+  {$_ % 2} {
+  "$_ je liché"
+  }
+  {-not ($_ % 2)} {
+  "$_ je sudé"
+  }
+}     
+ \end{minted}
+    \end{column}
+    \begin{column}{0.3\textwidth}
+      \textbf{Výstup}
+      \begin{verbatim}
+Lednička
+1 je liché
+4 je sudé
+3 je liché       
+      \end{verbatim}
+
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\subsection{Cykly}
+\begin{frame}[allowframebreaks,fragile]{Cykly}
+  \begin{itemize}
+    \item Podmíněné opakování příkazů
+    \item Stejně jako u switche lze použít \textit{Break} nebo {Continue} k předčasnému ukončení 
+  \end{itemize}
+  
+  \textbf{Cyklus For}
+
+  \begin{center}
+      \begin{minted}{powershell}
+  for (<Inicializace>; <Podmínka>; <Opakování>) {
+    <příkazy>
+  }
+    \end{minted}
+  \end{center}
+  \begin{itemize}
+    \item \texttt{<Inicializace>} umožňuje vytvořit iterační proměnné
+    \item \texttt{<Podmínka>} je výraz, který musí být splněn, aby se cyklus mohl opakovat
+      \begin{itemize}
+        \item Kontrola proběhne také před prvním spuštěním cyklu
+      \end{itemize}
+    \item V \texttt{<Opakování>} jsou obsaženy všechny příkazy, které se provedou po skončení jedné iterace cyklu
+      \item Žádná z těchto tří částí není vyžadována
+  \end{itemize}
+  \framebreak
+  \begin{columns}[t]
+    \begin{column}{0.6\textwidth}
+      \textbf{Příklad: FizzBuzz}
+    \begin{minted}[fontsize=\small]{powershell}
+for ($i = 1; $i -le 20; $i++) {
+  if ($i % 3 -eq 0 -and $i % 5 -eq 0) {
+    Write-Host "FizzBuzz," -NoNewline
+  }
+  elseif ($i % 3 -eq 0) {
+    Write-Host "Fizz," -NoNewline
+  }
+  elseif ($i % 5 -eq 0) {
+    Write-Host "Buzz," -NoNewline
+  }
+  else {
+    Write-Host "$i," -NoNewline
+  }
+}
+# Výstup: 1,2,Fizz,4,Buzz,Fizz,7,8,
+# Fizz,Buzz,11,Fizz,13,14,FizzBuzz,
+# 16,17,Fizz,19,Buzz,
+  \end{minted}
+    \end{column}
+    \begin{column}{0.4\textwidth}
+     \textbf{Zadání}
+     \begin{itemize}
+       \item Výpis čísel od 1 do 20.
+       \item Násobky 3 jsou nahrazeny slovem \mintinline{powershell}|"Fizz"|
+       \item Násobky 5 jsou nahrazeny slovem \mintinline{powershell}|"Buzz"|
+       \item Násobky 3 i 5 jsou nahrazeny \mintinline{powershell}|"FizzBuzz"|
+       \item Pozn.: Příkaz \mintinline{powershell}|$i++| je ekvivalentem \mintinline{powershell}|$i = $i + 1| nebo~\mintinline{powershell}|$i += 1|
+     \end{itemize}
+    \end{column}
+  \end{columns}
+\framebreak
+\begin{columns}
+  \begin{column}{0.70\textwidth}
+  \textbf{Příklad: Vnořené cykly\\Pascalův trojúhelník}
+  \begin{minted}[fontsize=\scriptsize]{powershell}
+$size = 5
+$values = @(1)
+for ($i = 1; $i -le $size; $i++) {
+  $spaces = " " * ($size - $i)
+  $row = ""
+  $nextValues = @(1)
+  for ($i = 0; $i -lt $values.Length; $i++) {
+    # Přičtení prvku kolekce z i-té pozice
+    $row += $values[$i]
+    $row += " "
+    if ($i + 1 -lt $values.Length) {
+      $nextValues += $values[$i] + $values[$i + 1]
+    }
+  }
+  Write-Host $spaces$row
+  # Operátor += pro pole znamená
+  # přidání prvku na jeho konec
+  $nextValues += 1
+  $values = $nextValues 
+}
+  \end{minted}
+  \end{column}
+  \begin{column}{0.215\textwidth}
+    \begin{center}
+    \textbf{Výstup}
+    \begin{verbatim}
+      1
+     1 1
+    1 2 1
+   1 3 3 1
+  1 4 6 4 1
+    \end{verbatim}
+    \end{center}
+  \end{column}
+\end{columns}
+\framebreak
+\textbf{Cyklus ForEach}
+\begin{itemize}
+  \item Průchod přes kolekci
+\end{itemize}
+  \begin{center}
+      \begin{minted}{powershell}
+  foreach ($<položka> in $<kolekce>) {
+    <příkazy>
+  }
+    \end{minted}
+  \end{center}
+     \textbf{Příklad}
+     \begin{itemize}
+       \item Vypsání informací o všech souborech větších než 100 KB v aktuální složce
+     \end{itemize}
+    \begin{minted}{powershell}
+  foreach ($soubor in Get-ChildItem) {
+    if ($soubor.length -gt 100KB) {
+      Write-Host $soubor
+      Write-Host $soubor.Length
+      Write-Host $soubor.LastAccessTime
+    }
+  }
+     \end{minted}
+ \framebreak
+ \textbf{Cyklus While}
+ \begin{itemize}
+   \item Stejný jako cyklus For bez inicializace a příkazů po skončení
+   \item Hodí se, když nepotřebujeme vytvářet další proměnné nebo nechceme provádět některé příkazy (třetí část For) po zavolání \textit{Continue}
+ \end{itemize}
+ \begin{center}
+     \begin{minted}[mathescape]{powershell}
+ <Inicializace>
+ while (<Podmínka>) {
+   <příkazy>
+   # $\ldots$
+   <Opakování>
+ }
+     \end{minted}
+ \end{center}
+ \framebreak
+ \textbf{Příklad: největší společný dělitel dvou přirozených čísel\\(Euklidův algoritmus)}
+     \begin{minted}{powershell}
+[int]$a = Read-Host "Zadejte první číslo"
+[int]$b = Read-Host "Zadejte druhé číslo"
+
+while($b -ne 0){
+  $rem = $a % $b
+  $a = $b
+  $b = $rem
+}
+
+Write-Host "Největší společný dělitel:" $a
+     \end{minted}
+\framebreak
+
+\textbf{Cyklus Do}
+\begin{itemize}
+  \item Nejdříve vykoná příkazy, podmínky kontroluje až potom
+  \item Dvě varianty: \textbf{Do While}, \textbf{Do Until} - podmínka je negovaná
+  \item Vhodné při zpracování vstupu (nejdříve načíst, až pak ověřit)
+\end{itemize}
+\begin{center}
+\begin{minted}[mathescape]{powershell}
+  <Inicializace>
+  do {
+    <příkazy>
+    # $\ldots$
+    <Opakování>
+  }
+  while (<Podmínka>)
+  \end{minted}
+\end{center}
+\framebreak
+\textbf{Příklad: Hádání čísla}
+  \begin{minted}[fontsize=\small]{powershell}
+$target = Get-Random -Maximum 100  # Náhodné číslo mezi 0 a 99
+$numTries = 0 
+
+do {
+  $numTries++
+  [int]$guess = Read-Host "Zadejte číslo"
+  if ($guess -lt $target) {
+    Write-Host "Více."
+  }
+  elseif ($guess -gt $target) {
+    Write-Host "Méně."
+  }
+} while ($guess -ne $target)
+
+Write-Host "Trefa! Uhádli jste po $numTries pokusech"
+\end{minted}
+\end{frame}
+
+\end{document}

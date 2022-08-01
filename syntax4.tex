@@ -1,0 +1,134 @@
+\documentclass[main.tex]{subfiles}
+
+\begin{document}
+\subsection{Objekty}%
+\begin{frame}[fragile,allowframebreaks]{Objekty}
+Složitější datové struktury umožňující definici vlastních typů.\\
+
+  \textbf{Pojmy}
+  \begin{itemize}
+    \item \textit{Třída} (Class) - definice objektu
+    \item \textit{Instance} - konkrétní proměnná s typem tohoto objektu
+    \item \textit{Atribut} (Property) - proměnná uvnitř objektu
+    \item \textit{Metoda} - funkce definovaná pro objekt, má přístup k jeho atributům
+      \begin{itemize}
+        \item Možnost definovat více metod se stejným názvem lišící se v seznamu jejich parametrů (\textit{Method Overloading} - přetěžování metod)
+      \end{itemize}
+    \item \texttt{\$this} - reference na objekt uvnitř jeho metod
+    \item \textit{Konstruktor} - metoda volaná při vzniku objektu, slouží k inicializaci jeho atributů
+    \item \textit{Statický člen} - Atribut nebo metoda existující v rámci třídy jako takové, nepatří žádné konkrétní instanci
+  \end{itemize}
+\framebreak
+\begin{columns}[t]
+  \begin{column}{0.35\textwidth}
+\textbf{Příklad: vytvoření třídy}
+    \begin{minted}[fontsize=\fontsize{8.3pt}{8.7pt},linenos=true]{powershell}
+class Tea {
+  # statický atribut:
+  # celkový počet nálevů
+  static [int]$TotalInfusions = 0
+  # atributy každé instance
+  [string]$Name
+  [string]$Origin
+  [int]$Infusions
+  # konstruktory objektu
+  Tea($Name, $Origin, $Infusions){
+    $this.Name      = $Name
+    $this.Origin    = $Origin
+    $this.Infusions = $Infusions
+  }
+  Tea(){ $this.Name = 'Undefined' }
+  # metoda v instanci
+  [void] Pour(){
+    if($this.Infusions -gt 0){
+      $this.Infusions--
+      # přístup ke statickému atributu
+      [Tea]::TotalInfusions++
+    }
+  }
+}
+\end{minted}
+\end{column}
+\begin{column}{0.5\textwidth}
+  \small\textbf{Viditelnost atributů}
+  \begin{itemize}
+    \item Veškeré atributy třídy jsou \textbf{veřejné}
+      \begin{itemize}
+        \item Jestliže máme odkaz na instanci, můžeme v ní číst, měnit a používat úplně všechno
+        \item Pokud víme o existenci objektu, dostaneme se i ke všem jeho statickým atributům
+        \item Členové s vlastností \textbf{hidden} (nastavuje se podobně jako \texttt{static}) se pouze nezobrazují při doplňování tabulátorem nebo při zavolání \texttt{Get-Member} bez přepínače \texttt{-Force}
+      \end{itemize}
+  \end{itemize}
+\end{column}
+\end{columns}
+\framebreak
+\textbf{Příklad: čajový dýchánek}
+\begin{center}
+\begin{minted}[linenos=true,fontsize=\footnotesize]{powershell}
+# 1. způsob nastavení atributů:
+# Upřesnění v konstruktoru při instancování
+$cj = [Tea]::new('China Jasmin', 'China', 3)
+$cj.Pour()
+$cj.Pour()
+# 2. způsob: Přepsání po vytvoření
+$Mate = [Tea]::new()
+$Mate.Name = 'Mate Atacama'
+$Mate.Origin = 'Brazil'
+$Mate.Infusions = 1
+$Mate.Pour()
+# 3. způsob: Cmdlet New-Object
+$Rooibos = New-Object Tea -ArgumentList "Rooibos Pretoria",
+           "South Africa", 1
+$Rooibos.Pour()
+$Rooibos.Pour()
+[Tea]::TotalInfusions  # 4
+\end{minted}
+\end{center}
+\framebreak
+\textbf{Dědičnost}
+\begin{itemize}
+  \item Rozšíření vlastností objektu v další třídě
+  \item Třída, která dědí, má automaticky přístup ke všem členům třídy původní
+  \item Atributy rodičovské třídy se inicializují v \texttt{base()}
+  \item Zděděné metody se mohou dle potřeby přepisovat
+\end{itemize}
+\framebreak
+\textbf{Příklad\\Základová třída}
+\begin{minted}[escapeinside=||,fontsize=\small]{powershell}
+class Beverage {
+  [double]$Volume
+  [double]$Price
+  [void] Pour() {
+    $this.Volume /= 2
+  }
+
+  Beverage([double]$Volume, [double]$Price){
+    $this.Volume = $Volume
+    $this.Price  = $Price
+  }
+}
+\end{minted}
+\framebreak
+\textbf{Příklad\\Dědící třída}
+\begin{minted}[escapeinside=||,fontsize=\scriptsize]{powershell}
+class Juice |:| Beverage {
+  [double]$FruitPart
+  Juice($Volume, $Price, $FruitPart) |:| base($Volume, $Price) {
+    $this.FruitPart = $FruitPart
+  }
+  # Přetížená metoda
+  [void] Pour() {
+    $this.Volume /= 10
+  }
+  [string]ToString(){
+    return ("Juice {0}% - ${1} - {2} ml" -f $this.FruitPart,
+            $this.Price, $this.Volume)
+  }
+}
+$caprisonne = [Juice]::new(250, 0.5, 10)
+$caprisonne.Pour()
+$caprisonne.ToString()
+# Juice 10% - $0.5 - 25 ml
+\end{minted}
+\end{frame}
+\end{document}

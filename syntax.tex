@@ -1,0 +1,231 @@
+\documentclass[main.tex]{subfiles}
+
+\begin{document}
+\section{Syntax}
+\subsection{Proměnné}
+\begin{frame}[fragile]{Proměnné}
+\begin{itemize}
+  \item Slouží k ukládání informací do paměti
+  \item Zapisují se s \$ na začátku
+  \item Na velikosti písmen při zápisu nezáleží (\textit{Case-insensitive})
+  \item K přiřazení hodnoty se používá = (\textit{inicializace})
+  \item Hodnota se ale nemusí přiřadit, pokud proměnnou pouze nazveme (\textit{deklarace})
+  \item Typ proměnné rovněž nemusí být upřesněn, ale dá se zapsat v [ ] před~její název
+    \begin{itemize}
+      \item Případně se tak proměnná dá přetypovat
+    \end{itemize}
+\end{itemize}
+
+\vspace{5mm}
+\begin{columns}
+    \begin{column}{0.4\textwidth}
+        \textbf{Typovaná deklarace}
+        \large\mint{powershell}|[string]$greetings|
+    \end{column}
+    \begin{column}{0.5\textwidth}
+        \textbf{Netypovaná inicializace}
+        \large\mint{powershell}|$greetings = "Ahoj světe!"|
+    \end{column}
+\end{columns}
+\end{frame}
+\begin{frame}[fragile,allowframebreaks]{Přehled běžně používaných typů}
+  \begin{itemize}
+    \item Přejaté z platformy .NET
+    \item K zjištění typu proměnné se používá zřetězení metody a členu \mintinline{powershell}|.GetType().FullName|
+  \end{itemize}
+  \begin{center}
+    \vspace{-4mm}
+  \renewcommand{\arraystretch}{1.2}
+    \begin{tabular}{|c|c|c|}
+   \hline
+   \textbf{Název} & \textbf{Popis} & \textbf{Příklad} \\
+   \hline\hline
+   {\color{typecolor}\texttt{[char]}} & Jeden znak (s podporou Unicode) & {\color{codered}\DejaSans '☺'} \\
+   {\color{typecolor}\texttt{[string]}} & Textový řetězec - posloupnost znaků & {\color{codered}\texttt{"red"}}\\
+   {\color{typecolor}\texttt{[bool]}} & Logická hodnota & {\color{varcolor}\texttt{\$true}}, {\color{varcolor}\texttt{\$false}} \\
+   {\color{typecolor}\texttt{[int]}} & Celé číslo (32-bit) & \texttt{42}\\
+   {\color{typecolor}\texttt{[long]}} & Celé číslo (64-bit) & \texttt{1982989219753}\\
+   {\color{typecolor}\texttt{[float]}} & Desetinné číslo (přesnost \textasciitilde{}7 řádů) & \texttt{3.141593}\\
+   {\color{typecolor}\texttt{[double]}} & Desetinné číslo (přesnost \textasciitilde{}15 řádů) & \texttt{3.14159265359}\\
+   {\color{typecolor}\texttt{[decimal]}} & Desetinné číslo (přesnost \textasciitilde{}28 řádů) & \texttt{0.1234567891011}\\
+   {\color{typecolor}\texttt{[DateTime]}} & Datum a čas & {\color{cmdletcolor}\texttt{Get-Date}} \\
+   {\color{typecolor}\texttt{[Object[]]}} & Kolekce prvků  & \texttt{@(}{\color{codered}\texttt{'a'}}\texttt{,}{\color{codered}\texttt{"B"}}\texttt{, 2.7)} \\
+   \hline
+  \end{tabular}
+  \end{center}
+  \renewcommand{\arraystretch}{1}
+\end{frame}
+
+\begin{frame}[fragile]{Komentáře}
+   \begin{itemize}
+    \item Kód, který není vyhodnocován jako příkaz
+    \item Používá se k dokumentaci kódu nebo (dočasnému) odebrání některé funkcionality
+    \item Jednořádkový (tj.\ do konce řádku) začíná s \texttt{\textit{\#}}
+    \item Víceřádkový je pak obsažen v \texttt{\textit{\textless\# \#\textgreater}}
+  \end{itemize}
+  \vspace{5mm}
+  \begin{columns}[t]
+    \begin{column}{0.42\textwidth}
+     \textbf{Jeden řádek}
+     \begin{minted}{powershell}
+# Pozdraví svět
+Write-Output "Ahoj světe!"
+     \end{minted}
+    \end{column}
+    \begin{column}{0.58\textwidth}
+      \textbf{Více řádků}
+     \begin{minted}{powershell}
+<#
+  Toto je velice důležitá proměnná.
+  Už jsem sice zapomněl, co dělá,
+  ale pokud se odstraní,
+  program začne náhodně padat.
+#>
+$x = 42
+      \end{minted}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\subsection{Cmdlety}
+\begin{frame}[allowframebreaks]{Cmdlety}
+  \begin{itemize}
+    \item Kompilovaný kód C\# (nebo čehokoliv, co podporuje .NET)
+    \item Zkratka pro \texttt{"Command let"}
+    \item Příkaz ve formátu \texttt{Sloveso-PodstatnéJméno}
+      \begin{itemize}
+        \item \textit{Sloveso} vyjadřuje prováděnou operaci
+        \item \textit{Podstatným jménem} (standardně v jednotném čísle) označíme objekty, na kterých operaci vykonáme
+      \end{itemize}
+   \item Kromě tohoto pravidla by se také měla používat standardní slovesa
+     \begin{itemize}
+       \item Dají se zobrazit příkazem \texttt{Get-Verb}
+     \end{itemize}
+  \item Na část z nich se lze odkázat přes aliasy
+    \begin{itemize}
+      \item Definované zvlášť pro slovesa a podstatná jména, kombinují se dohromady
+    \end{itemize}
+  \end{itemize}
+  \framebreak
+  \textbf{Výběr některých běžně používaných sloves v Cmdletech}
+  \begin{center}
+  \begin{tabular}{|l|c|l|c|}
+    \hline
+    \textbf{Název} & \textbf{Alias} & \textbf{Příklad} & \textbf{Alias příkladu} \\
+    \hline
+    Add & a & \texttt{Add-Content} & \\
+    \hline
+    Clear & cl & \texttt{Clear-History} & clhy \\
+    \hline
+    Copy & cp & \texttt{Copy-Item} & cpi \\
+    \hline
+    Get & g & \texttt{Get-Process} & gps \\
+    \hline
+    Find & fd & \texttt{Find-Module} & \\
+    \hline
+    Format & f & \texttt{Format-Table} & ft\\
+    \hline
+    Join & j & \texttt{Join-Path} & \\
+    \hline
+    Move & m & \texttt{Move-Item} & mi \\
+    \hline
+    New & n & \texttt{New-Alias} & nal \\
+    \hline
+    Remove & r & \texttt{Remove-Variable} & rv \\
+    \hline
+    Set & s & \texttt{Set-Location} & sl\\
+    \hline
+    Show & sh & \texttt{Show-Markdown} & \\
+    \hline
+    Split & sl & \texttt{Split-Path} & \\
+    \hline
+  \end{tabular}
+\end{center}
+\end{frame}
+
+\subsection{Operátory}
+\begin{frame}[fragile,allowframebreaks]{Aritmetika}
+  \textit{Sčítání}
+  \begin{itemize}
+    \item Podporováno mezi čísly, řetězci, poli a slovníky
+  \end{itemize}
+  \vspace{5mm}
+  \resizebox{\textwidth}{!}{%
+  \begin{tabular}{|m{6.8cm}|m{6cm}|}
+    \hline
+    \textbf{Výraz} & \textbf{Výsledek} \\
+    \hline
+    \mintinline{powershell}|41 + 1| & \mintinline{powershell}|42| \\
+    \mintinline{powershell}|"abc" + "def"| & \mintinline{powershell}|"abcdef"| \\
+    \mintinline{powershell}|@(1, "jedna") + @(2.0, "dva")| & \mintinline{powershell}|@(1, "jedna", 2.0, "dva")| \\
+    \mintinline{powershell}|@{'A' = "Alfa"} + @{'B' = "Bravo"}| & \mintinline{powershell}|@{'A' = "Alfa"; 'B' = "Bravo"}| \\
+    \hline
+      \end{tabular}}
+
+   \framebreak
+   \textit{Odčítání}
+   \begin{itemize}
+     \item Možné pouze u čísel
+     \item Binární (mezi dvěma čísly): \mintinline{powershell}|18 - 8|
+     \item Unární (převrácení hodnoty): \mintinline{powershell}|-7|
+   \end{itemize}
+  \vspace{3mm}
+   \textit{Násobení}
+   \begin{itemize}
+     \item Definováno v rámci čísel a polí
+   \end{itemize}
+  \vspace{3mm}
+  \resizebox{\textwidth}{!}{%
+  \begin{tabular}{|m{6.8cm}|m{6cm}|}
+    \hline
+    \textbf{Výraz} & \textbf{Výsledek} \\
+    \hline
+    \mintinline{powershell}|6 * 7| & \mintinline{powershell}|42| \\
+    \mintinline{powershell}|"abc" * 5| & \mintinline{powershell}|"abcabcabcabcabc"| \\
+    \mintinline{powershell}|@(7, 1) * 3| & \mintinline{powershell}|@(7, 1, 7, 1, 7, 1)| \\
+    \hline
+      \end{tabular}}
+   \framebreak
+
+   \textit{Dělení}
+   \begin{itemize}
+     \item Pokud není určený typ, výsledek se dle potřeby dokáže převést buď na~celé, nebo desetinné číslo
+     \item \mintinline{powershell}|(6/3).GetType().FullName| $\to$ {\color{codered}\texttt{ System.Int32}} (název v .NET)
+     \item \mintinline{powershell}|(6/4).GetType().FullName| $\to$ {\color{codered}\texttt{ System.Double}}
+   \end{itemize}
+  \vspace{5mm}
+   \textit{Modulo}
+   \begin{itemize}
+     \item Vrací zbytek po dělení dvou (klidně i desetinných) čísel
+     \item \mintinline{powershell}|16 % 5| $\to$ \texttt{ 1}
+     \item \mintinline{powershell}|5.3 % 2| $\to$ \texttt{ 1.3}
+   \end{itemize}
+   \vspace{3mm}
+   \textit{Ostatní matematické funkce}
+  \begin{itemize}
+    \item Dostupné v .NET třídě \texttt{Math}
+    \item \mintinline{powershell}|[Math]::floor([Math]::pi) # 3|
+  \end{itemize}
+   \framebreak
+
+   \textit{Aritmetika v rámci bitů} (bitwise arithmetic)
+ \begin{itemize}
+   \item Pracuje s každým bitem čísla zvlášť
+   \item Číslo lze zapsat v binární formě s prefixem \texttt{0b}, například
+     \mintinline{powershell}|0b111| $\to$ \texttt{ 7}
+ \end{itemize}
+  \resizebox{1\textwidth}{!}{%
+  \begin{tabular}{|c|c|c|c|}
+    \hline
+    \textbf{Název operace} & \textbf{Operátor} & \textbf{Výsledek na bitech $a(,b)$} & \textbf{Příklad} \\
+    \hline
+    Binární součin & {\color{paramcolor}\texttt{-band}} & $a\cdot b$ & \begin{tabular}{r} \texttt{0b1100} \\ \texttt{AND 0b1010}\\ \hline \texttt{0b1000} \end{tabular} \\ \hline
+    Binární součet & {\color{paramcolor}\texttt{-bor}} & $a+ b$ & \begin{tabular}{r} \texttt{0b1100} \\ \texttt{OR 0b1010}\\ \hline \texttt{0b1110} \end{tabular} \\ \hline
+    Exkluzivní součet & {\color{paramcolor}\texttt{-bxor}} & $a\not =b$ & \begin{tabular}{r} \texttt{0b1100} \\ \texttt{XOR 0b1010}\\ \hline \texttt{0b0110} \end{tabular} \\ \hline
+    Binární negace & {\color{paramcolor}\texttt{-bnot}} & $!a$ &  \begin{tabular}{c|c} $a$ & \texttt{0b10101110} \\ \hline $!a$ & \texttt{0b01010001} \end{tabular}\\ \hline
+    Posun vlevo & {\color{paramcolor}\texttt{-shl}} &  & \begin{tabular}{c|c} $a$  & \texttt{0b10101110} \\ \hline $a << 3$ & \texttt{0b01110000} \end{tabular}  \\ \hline
+    Posun vpravo & {\color{paramcolor}\texttt{-shr}} &  & \begin{tabular}{c|c} $a$  & \texttt{0b10101110} \\ \hline $a >> 3$ & \texttt{0b00010101} \end{tabular}  \\ \hline
+      \end{tabular}}
+  \end{frame}
+
+\end{document}

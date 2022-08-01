@@ -1,0 +1,77 @@
+\documentclass[main.tex]{subfiles}
+
+
+\begin{document}
+
+\begin{frame}[fragile,allowframebreaks]{Remoting přes Powershell}
+  \textbf{Vytvoření nového sezení (uložení do proměnné)}
+\begin{minted}[fontsize=\footnotesize]{powershell}
+$session = New-PSSession -HostName <host-ip> -UserName <host-username>
+\end{minted}
+\begin{minted}[fontsize=\footnotesize,breaklines,bgcolor=bg1]{ps1con}
+PS /home/auburn> $session = New-PSSession -HostName 192.168.0.103 -UserName krist
+krist@192.168.0.103's password:
+PS /home/auburn> $session
+
+ Id Name            Transport ComputerName    ComputerType    State
+ -- ----            --------- ------------    ------------    -----
+  2 Runspace1       SSH       192.168.0.103   RemoteMachine   Opened
+\end{minted}
+\textbf{Ukončení sezení}
+\begin{minted}{powershell}
+Remove-PSSession -Session $session
+\end{minted}
+\textbf{Použití sezení v příkazech}
+\begin{itemize}
+  \item Jde to i bez proměnné, ale u každého příkazu by bylo potřeba znovu určovat adresu serveru
+\end{itemize}
+\framebreak
+\textit{Vzdálené spouštění příkazů}
+\begin{minted}{powershell}
+Invoke-Command $session -ScriptBlock { <kód> }
+\end{minted}
+\begin{minted}[fontsize=\scriptsize,bgcolor=bg1]{powershell}
+PS /home/auburn> Invoke-Command $Session -ScriptBlock { Get-Process powershell }
+
+ NPM(K)    PM(M)      WS(M)     CPU(s)      Id  SI ProcessName   PSComputerName
+ ------    -----      -----     ------      --  -- -----------   --------------
+     28    56.29      58.20       4.38    9964   1 powershell     192.168.0.103
+\end{minted}
+\textit{Lokální proměnné}
+\begin{itemize}
+  \item Ve ScriptBlocku se označí prefixem \texttt{\$Using:}
+  \item Zde je nelze nijak měnit, pouze referencovat
+\end{itemize}
+\begin{minted}[fontsize=\footnotesize,bgcolor=bg1]{ps1con}
+PS /home/auburn> $ps = "*PowerShell*"
+PS /home/auburn> Invoke-Command -Session $session -ScriptBlock {
+\end{minted}
+\vspace{-13mm}
+\begin{minted}[fontsize=\footnotesize,escapeinside=||,bgcolor=bg1]{powershell}
+  Get-WinEvent -LogName $Using|:|ps
+}
+\end{minted}
+
+\framebreak
+\textit{Interaktivní sezení}
+\begin{minted}[fontsize=\footnotesize]{powershell}
+Enter-PSSession -Session $session
+\end{minted}
+nebo
+\begin{minted}[fontsize=\footnotesize]{powershell}
+Enter-PSSession -HostName <host-ip> -UserName <host-username>
+\end{minted}
+\vspace{4mm}
+\begin{minted}[fontsize=\footnotesize,bgcolor=bg1]{ps1con}
+PS /home/auburn> Enter-PSSession -Session $session
+\end{minted}
+\vspace{-13mm}
+\begin{minted}[fontsize=\footnotesize,bgcolor=bg1]{console}
+[krist@192.168.0.103]: PS C:\Users\krist>
+\end{minted}
+\normalsize
+\framebreak
+\includegraphics[width=\textwidth]{img/ssh2.PNG}
+\end{frame}
+
+\end{document}

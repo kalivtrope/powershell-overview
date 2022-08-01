@@ -1,0 +1,470 @@
+\documentclass[main.tex]{subfiles}
+
+\begin{document}
+\subsection{Pipeline}
+\begin{frame}[fragile]{Pipeline}
+  \begin{itemize}
+    \item Řetězení několika příkazů na jednom řádku (\textit{one-linery})
+    \item Předávání výstupů mezi příkazy bez nutnosti vytváření proměnných na mezivýsledky
+    \item K aktuálnímu výstupu příkaz přistupuje ve speciálním (vyhrazeném) objektu \mintinline{powershell}|$_|
+      \begin{itemize}
+        \item V dokumentaci jednotlivých cmdletů je nutné dohledat, v jakých vlastnostech skončí daný vstup
+      \end{itemize}
+    \item Zapisuje se operátorem \textbf{|} (pipe, roura)
+    \item Jestliže je výsledný pipeline moc dlouhý, doporučuje se rozdělit ho kvůli přehlednosti na více řádků končící (nebo začínající) rourou
+      \begin{itemize}
+        \item Umožňuje případné komentování jednotlivých částí
+      \end{itemize}
+  \end{itemize}
+\vspace{2mm}
+\begin{columns}
+  \begin{column}{0.40\textwidth}
+    \textbf{Použití s pipeline}
+    \begin{minted}[fontsize=\scriptsize]{powershell}
+Get-Process |
+Sort-Object Name |
+Format-Table -Property Name, CPU
+    \end{minted}
+  \end{column}
+  \begin{column}{0.50\textwidth}
+    \textbf{Použití bez pipeline}
+    \begin{minted}[fontsize=\scriptsize]{powershell}
+$Processes = Get-Process
+$SortedPS = Sort-Object Name
+Format-Table $SortedPS -Property Name, CPU
+  \end{minted}
+  \end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile,allowframebreaks]{Filtrování v pipeline}
+\textbf{Where-Object}
+\begin{itemize}
+  \item Výběr prvků v kolekci, jejichž vlastnosti splňují danou podmínku
+  \item Kromě ScriptBlocku lze také porovnávat přímo v parametrech cmdletu
+  \item Často se používá alias \texttt{where}
+  \end{itemize}
+  Příklad: \textit{Výběr procesů s nízkou prioritou} (ekvivalentní způsoby)
+   \begin{enumerate}\scriptsize
+   \item \noindent\mintinline{powershell}@Get-Process | Where-Object PriorityClass -eq -Value "BelowNormal"@
+      \item \mintinline{powershell}@Get-Process | Where-Object -Property PriorityClass -eq "BelowNormal"@
+      \item \mintinline{powershell}@Get-Process | where {$_.PriorityClass -eq "BelowNormal"}@
+    \end{enumerate}
+ \begin{itemize}
+   \item Dá se použít také na ověření existence dané vlastnosti
+ \end{itemize}
+  Příklad: \textit{Výběr všech adresářů v aktuální složce}
+  \mintinline{powershell}@Get-ChildItem | where {$_.PSIsContainer}@
+
+\framebreak
+  \textbf{Select-Object}\\[2mm]
+  Funkce:
+    \begin{itemize}
+       \setlength\itemsep{1em}
+       \item Výběr vlastností v každém prvku: \textbf{\texttt{-Property}}
+         {\small
+        \mintinline{powershell}@Get-Process | Select-Object -Property ProcessName, Id, WS@
+        }
+      \item Filtrování jedinečných hodnot: \textbf{\texttt{-Unique}}
+        \begin{minted}{powershell}
+"a","b","c","a","c","a" | Select-Object -Unique
+# výstup: a b c
+        \end{minted}
+      \item Upřesnění rozmezí:
+        \begin{itemize}
+          \item jednotlivé pozice (\textbf{\texttt{-Index}} \texttt{<Seznam>})
+        \begin{minted}{powershell}
+$a = Get-EventLog -LogName "Windows PowerShell"
+# výběr prvního a posledního záznamu
+$a | Select-Object -Index 0, ($a.count - 1)
+        \end{minted}
+        \framebreak
+          \item prvních (\textbf{\texttt{-First}}) \textit{N} prvků
+            \begin{minted}{powershell}
+# Prvních 5 řádků v souboru
+Get-Content file.txt | select -First 5
+            \end{minted}
+          \item posledních (\textbf{\texttt{-Last}}) \textit{N} prvků
+            \begin{minted}{powershell}
+# Poslední 3 řádky ze schránky
+Get-Clipboard | select -Last 3
+            \end{minted}
+          \item přeskočení \textit{N} prvků (\textbf{\texttt{-Skip,-SkipLast}}) nebo vybraných pozic (\textbf{\texttt{-SkipIndex}})
+\begin{minted}{powershell}
+# Vytvoření vzdáleného sezení na všech serverech
+# kromě prvního serveru v souboru
+New-PSSession -ComputerName (Get-Content Servers.txt |
+Select-Object -Skip 1)
+\end{minted}
+        \end{itemize}
+      \item Pozn.: Při použití \texttt{-First} nebo \texttt{-Index} se vstup přestane generovat (nebo zpracovávat) ve chvíli, kdy se načtou všechny požadované prvky
+        \begin{itemize}
+          \item K vypnutí této optimalizace je třeba upřesnit přepínač \texttt{-Wait}
+        \end{itemize}
+    \end{itemize}
+\framebreak
+\textbf{Sort-Object}
+\begin{itemize}
+  \item Setřízení kolekce na základě vlastností
+  \item Výchozím parametrem řazení je atribut \textbf{\texttt{Name}}
+  \item Lze upřesnit získání pouze prvních (\textbf{\texttt{-Top}}) nebo posledních (\textbf{\texttt{-Bottom}}) \textit{N} prvků z výsledné struktury\vspace{2mm}
+    \begin{minted}[fontsize=\footnotesize]{ps1}
+Get-ChildItem "~/.config" | Sort-Object -Top 5
+<#
+Directory: /home/auburn/.config
+
+  Mode                 LastWriteTime         Length Name
+  ----                 -------------         ------ ----
+  d----           5/23/2020  3:23 PM                alacritty
+  d----            5/9/2020 11:03 PM                asciinema
+  d----           3/28/2020  3:00 PM                autostart
+  d----            5/3/2020  2:24 PM                blender
+  d----           4/21/2020 11:03 PM                calcurse
+#>
+    \end{minted}
+  \item Prvky lze řadit buď vzestupně (výchozí způsob), nebo sestupně (\textbf{\texttt{-Descending}})\vspace{3mm}
+    \begin{minted}[fontsize=\footnotesize]{powershell}
+Get-History | Sort-Object -Property Id -Descending
+<#
+  Id CommandLine
+  -- -----------
+  10 Get-Command Sort-Object -Syntax
+   9 $PSVersionTable
+   8 Get-Command Sort-Object -Syntax
+   7 Get-Command Sort-Object -ShowCommandInfo
+   6 Get-ChildItem -Path ~/Pictures | Sort-Object -Property Length
+   5 Get-Help Clear-History -online
+   4 Get-Help Clear-History -full
+   3 Get-ChildItem | Get-Member
+   2 Get-Command Sort-Object -Syntax
+   1 Set-Location ~/Documents
+#>
+  \end{minted}
+\framebreak
+  \item Opět možno vybírat pouze jedinečné hodnoty přepínačem \textbf{\texttt{-Unique}}
+  \item Parametr \textbf{\texttt{-Stable}} zaručí, že rovnající se hodnoty budou ve výsledku mít stejné pořadí jako v původní struktuře
+  \item Vlastní styl porovnávání se dá definovat ve ScriptBlocku (výchozí porovnává na základě typu vlastností)
+\end{itemize}
+\framebreak
+\textbf{Příklad: Řazení na základě zbytku po dělení}
+\begin{columns}[t]
+  \begin{column}{0.47\textwidth}
+    \textbf{Výchozí třídění}
+  \scriptsize
+    \begin{minted}{powershell}
+1..17 | Sort-Object {$_ % 3}
+9
+15
+3
+12
+6
+13
+10
+16
+1
+7
+4
+11
+5
+14
+2
+8
+17
+\end{minted}
+  \end{column}
+  \begin{column}{0.5\textwidth}
+    \textbf{Stabilní třídění}
+  \scriptsize
+    \begin{minted}{powershell}
+1..17 | Sort-Object {$_ % 3} -Stable
+3
+6
+9
+12
+15
+1
+4
+7
+10
+13
+16
+2
+5
+8
+11
+14
+17
+\end{minted}
+  \end{column}
+\end{columns}
+\end{frame}
+
+\subsection{Funkce}
+\begin{frame}[allowframebreaks,fragile]{Funkce}
+  \begin{itemize}
+    \item Samostatný blok kódu
+      \begin{itemize}
+        \item Po definici se nespustí sám, je třeba ho zavolat
+      \end{itemize}
+    \item Název funkce by měl dodržovat standardní formát Cmdletu
+    \item Lze ji zadefinovat s parametry, případně v ní vracet hodnotu pro použití v jiných příkazech nebo předčasné skončení
+    \item Členění příkazů na menší logické celky pomůže zvýšit přehlednost a~čitelnost kódu
+    \item Snižuje potřebu kopírování kódu
+  \end{itemize}
+  \framebreak
+\textbf{Základní syntax}
+  \begin{minted}{powershell}
+function <název-funkce> {<příkazy>}
+\end{minted}
+\textbf{Příklad}
+\begin{minted}{powershell}
+function Get-Weekday { (Get-Date).DayOfWeek }
+\end{minted}
+\vspace{3mm}
+\begin{itemize}
+  \item Část funkce v \texttt{\{ \}} se nazývá \textbf{ScriptBlock} (typ)
+  \item Lze ji využít anonymně (bez názvu) v pipelinech
+\end{itemize}
+\textbf{Příklad: ScriptBlock u WhereObject}
+  \begin{minted}[escapeinside=@@]{powershell}
+    Get-ChildItem -Path *.txt | where @\colorbox{yellow!80}{\texttt{\textbf{\{\$\_.length -gt 10000\}}}}@
+\end{minted}
+\framebreak
+\textbf{Parametry}
+\begin{itemize}
+  \item Proměnné vnášené do funkce
+\end{itemize}
+  \textit{Pojmenované parametry}\\[2mm]
+  \mintinline{powershell}|Get-ChildItem -Path "~/.scripts" -Depth 2|
+
+\begin{itemize}
+  \item Jsou zadány jménem, popř.\ typem
+  \item Powershell umožňuje odkazovat se na ně jejich částečným názvem (mimojiné podporuje doplňování tabulátorem), pokud je ovšem jednoznačný
+    \begin{itemize}
+      \item Vhodné pouze pro rychlé testování v konzoli
+    \end{itemize}
+\end{itemize}
+\framebreak
+
+{\large\textbf{Příklad: částečné názvy}}
+
+\vspace{3mm}
+ \textbf{Nejednoznačný název}\\
+ \mintinline{ps1con}|PS /home/auburn> Get-ChildItem -P "~/.scripts"|
+
+{\color{red}\texttt{Get-ChildItem: Parameter cannot be processed because the parameter name 'P' is ambiguous. Possible matches include: -Path -PipelineVariable -LiteralPath.}}\\
+
+ \textbf{Jednoznačný název}
+\begin{minted}{ps1con}
+PS /home/auburn> Get-ChildItem -Pa "~/.scripts"
+
+    Directory: /home/auburn/.scripts
+
+    Mode                 LastWriteTime         Length Name
+    ----                 -------------         ------ ----
+    -----            5/6/2020  1:29 AM           1165 btw,
+\end{minted}
+\framebreak
+
+\begin{itemize}
+  \item Možnost přiřadit také výchozí hodnotu (využije se, když nebude při volání funkce určena)
+  \item Dva způsoby zápisu (ekvivalentní, ale styl vlevo se v Powershellu používá více)
+\end{itemize}
+\begin{columns}[t]
+  \begin{column}{0.4\textwidth}
+    \small\textbf{Zápis ve ScriptBlocku s \texttt{param}}
+\begin{minted}[fontsize=\footnotesize]{powershell}
+function <název> {
+  param([typ]$parametr1,
+        [typ]$parametr2,
+        ...,
+        [typ]$parametrN)
+
+  <příkazy>
+}
+\end{minted}
+ \end{column}
+  \begin{column}{0.5\textwidth}
+    \footnotesize\textbf{Zápis podobný u běžných prog. jazyků \\(C++, Java)}
+\begin{minted}[fontsize=\footnotesize]{powershell}
+function <název> ([typ]$parametr1,
+                  [typ]$parametr2,
+                  ...,
+                  [typ]$parametrN)
+  {
+    <příkazy>
+  }
+\end{minted}
+ \end{column}
+\end{columns}
+\framebreak
+\textbf{Příklad: Funkce s výchozí hodnotou\\Soubory menší než \texttt{Size}}
+
+\begin{minted}[fontsize=\footnotesize]{powershell}
+function Get-SmallFiles {
+  param (
+    $Size = 100,
+    $Dir = $HOME
+  )
+  Get-ChildItem $Dir | Where-Object {
+    # všechny objekty menší než $Size, které nejsou složkami
+    $_.Length -lt $Size -and !$_.PSIsContainer
+  }
+}
+\end{minted}
+\begin{itemize}
+  \item Lze zavolat např.\
+\begin{minted}[fontsize=\footnotesize]{powershell}
+Get-SmallFiles -Dir "." # aktuální složka
+# ~ je zkratka pro domovský adresář uživatele na Linuxu
+Get-SmallFiles -Dir "~/Pictures" -Size 10000
+# nejmenované parametry musí být ve stejném pořadí jako v param
+Get-SmallFiles 1024 "~/.config"
+  \end{minted}
+\end{itemize}
+\framebreak
+\textit{Poziční parametry}
+\begin{itemize}
+  \item Nepoužívají se tak často jako pojmenované parametry, protože ty lze v případě potřeby na poziční snadno převést
+  \item Do funkce se vnáší pouze beze jména v pevně daném pořadí (ale mohou být prokládány jmenovanými parametry, čímž se volání může stát nepřehledným)
+  \item Uložené v proměnné \mintinline{powershell}|$args| (pole)
+\end{itemize}
+
+\textbf{Příklad: Zápis do souboru ze schránky}
+  \begin{minted}{powershell}
+function Write-Clipboard {
+  Get-Clipboard | Set-Content -Path $args[0]
+}
+# Použití:
+Write-Clipboard vystup.out
+  \end{minted}
+\framebreak
+\textit{Povinné parametry}
+\begin{itemize}
+  \item Upřesňují se v atributu \texttt{Parameter}
+    \begin{itemize}
+      \item Zde se dá nastavit také pozice samotného parametru, čímž se jmenovaný parametr zkombinuje s pozičním
+    \end{itemize}
+  \item Jestliže se funkce zavolá bez nich, bude se vyžadovat jejich doplnění (interaktivně od uživatele)
+\end{itemize}
+\textbf{Příklad: Vyhledávání souboru}
+\begin{minted}{powershell}
+function Find-File {
+  param(
+    $Dir, # nepovinný jmenovaný parametr
+    [Parameter(Mandatory, Position=0)]
+    [string]$Name # povinný poziční parametr
+  )
+  Get-ChildItem $Dir -Recurse -Filter $Name -File
+}
+\end{minted}
+\framebreak
+
+\textit{Přepínače}
+\begin{itemize}
+  \item Jmenované parametry s hodnotami typu \textit{Boolean} (\texttt{\$true,\$false})
+  \item K přiřazení hodnoty \texttt{\$true} stačí při volání zapsat pouze jejich název
+  \item Definují se typem \texttt{[switch]}
+\end{itemize}
+\begin{columns}
+  \begin{column}{0.38\textwidth}
+ \textbf{Příklad}
+  \begin{minted}[fontsize=\small]{powershell}
+function Write-Clipboard {
+  param(
+    [string]$Path,
+    [switch]$Debug
+  )
+  if ($Debug) {
+    Get-Clipboard
+  }
+  Get-Clipboard |
+  Set-Content -Path $Path
+}
+\end{minted}
+  \end{column}
+  \begin{column}{0.62\textwidth}
+    \textbf{Volání pro \texttt{Debug=\$true}}
+\begin{minted}[fontsize=\small,escapeinside=||]{powershell}
+Write-Clipboard -Debug -Path a.out
+Write-Clipboard -Debug|:|$true -Path a.out
+  \end{minted}
+
+\textbf{Volání pro \texttt{Debug=\$false}}
+\begin{minted}[fontsize=\small,escapeinside=||]{powershell}
+Write-Clipboard -Path a.out
+Write-Clipboard -Debug|:|$false -Path a.out
+  \end{minted}
+
+  \end{column}
+\end{columns}
+
+\framebreak
+\end{frame}
+
+\begin{frame}[fragile,allowframebreaks]{Pipeline ve funkcích}
+  \vspace{-5mm}
+  \begin{itemize}
+  \item Pokročilejší ovládání vstupu z pipeline
+  \item Využití při průchodu přes kolekci\\[3mm]
+\end{itemize}
+
+\textbf{Syntax}
+  \begin{minted}{powershell}
+function <název> {
+  begin {<příkazy>}
+  process {<příkazy>}
+  end {<příkazy>}
+}
+\end{minted}
+\begin{itemize}
+  \item Části \textit{Begin, End} se spouští pouze jednou - při první či poslední zpracované položce
+  \item Část \textit{Process} proběhne pro každou položku kolekce
+    \framebreak
+  \item Během volání funkce je dostupná speciální proměnná \texttt{\$input}, ve~které je uložen dosud zpracovaný vstup
+    \begin{itemize}
+      \item V \textit{Begin} tedy bude prázdná, a v \textit{End} bude obsahovat původní objekt poslaný přes pipeline
+      \item Jestliže je definován blok \textit{Process}, hodnoty se přesouvají do proměnné \texttt{\$\_}, a \texttt{\$input} tak bude vždy prázdný
+      \item Lze ji použít i mimo bloky, kde její hodnota bude stejná jako po přečtení v \textit{End}
+    \end{itemize}
+  \item Pokud je definován jakýkoliv z těchto bloků, veškerý kód mimo ně se už nebere jako kód a při zavolání funkce spadne (s dost kryptickými chybami)
+\end{itemize}
+\vspace{-7mm}
+\begin{columns}[t]
+  \begin{column}{0.50\textwidth}
+ \begin{minted}[fontsize=\scriptsize,bgcolor=white]{powershell}
+function Get-PipelineInput {
+  process {"Aktuální objekt: $_ "}
+  end {"Konec:   Celý vstup: $input"}
+}
+\end{minted}
+\end{column}
+  \begin{column}{0.53\textwidth}
+\begin{minted}[fontsize=\scriptsize,bgcolor=bg1]{ps1con}
+PS /home/auburn> 1,2,4 | Get-PipelineInput
+Aktuální objekt: 1
+Aktuální objekt: 2
+Aktuální objekt: 4
+Konec: Celý vstup:
+\end{minted}
+  \end{column}
+\end{columns}
+\framebreak
+\textbf{Filtr}
+\begin{itemize}
+  \item Ekvivalent funkce, jejíž kód je celý zabalený do bloku \textit{Process}
+  \item Definuje se klíčovým slovem \texttt{filter} na místě \texttt{function}
+\end{itemize}
+\textbf{Příklad}
+\begin{itemize}
+  \item Filtr, která zobrazuje buď celý záznam, nebo pouze zprávu (člena \texttt{Message}) z výpisu
+\end{itemize}
+\begin{minted}{powershell}
+filter Get-ErrorLog ([switch]$message)
+{
+  if ($message) { Out-Host -InputObject $_.Message }
+  else { $_ }
+}
+\end{minted}
+\end{frame}
+\end{document}
